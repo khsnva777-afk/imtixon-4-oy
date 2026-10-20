@@ -4,7 +4,6 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import Message, CallbackQuery
 
 from buttons import (
@@ -17,7 +16,7 @@ from buttons import (
 TOKEN = "8954061624:AAGALn1_STqr1Xyjtq461mztr-2X4vBxAoo"
 
 bot = Bot(token=TOKEN)
-dp = Dispatcher(storage=MemoryStorage())
+dp = Dispatcher()
 
 
 class KursState(StatesGroup):
@@ -42,7 +41,6 @@ async def kurslar(message: Message):
         reply_markup=kurs_tugmalari(),
     )
 
-# 1. Avval FSM holatidagi kurs tanlash ishlaydi
 @dp.callback_query(KursState.kurs, F.data.in_(["python", "web", "bot"]))
 async def kurs_tanlash(callback: CallbackQuery, state: FSMContext):
     kurslar_dict = {
@@ -65,7 +63,6 @@ async def kurs_tanlash(callback: CallbackQuery, state: FSMContext):
     )
     await callback.answer()
 
-# 2. Oddiy holatdagi kurs haqida ma'lumot olish
 @dp.callback_query(F.data.in_(["python", "web", "bot"]))
 async def kurs_haqida(callback: CallbackQuery, state: FSMContext):
     kurslar_dict = {
@@ -76,7 +73,7 @@ async def kurs_haqida(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(f"{kurslar_dict[callback.data]} kursini tanladin.")
     await callback.answer()
 
-@dp.message(F.text == "📝 Kursga yoziliw")
+@dp.message(F.text == "📝 Kursga yozilish")
 async def yozilishni_boshlash(message: Message, state: FSMContext):
     await state.clear()
     await state.set_state(KursState.ism)
@@ -153,7 +150,6 @@ async def bekor_matn(message: Message, state: FSMContext):
         reply_markup=menu,
     )
 
-# "Markaz haqida" matnini xavfsiz tutish uchun lower() ishlatamiz
 @dp.message(F.text.casefold().contains("markaz haqida"))
 async def markaz_haqida(message: Message):
     await message.answer(
